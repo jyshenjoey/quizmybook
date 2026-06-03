@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Esio Trot Interactive Questions</title>
+  <style>
+    :root {
+      --bg: #fff1fb;
+      --paper: #fffaff;
+      --ink: #3b2546;
+      --muted: #765a86;
+      --pink: #f48acb;
+      --purple: #a875ff;
+      --lavender: #efe3ff;
+      --blue: #8bd3ff;
+      --yellow: #ffe58a;
+      --line: #dfc5ee;
+      --ok: #18855d;
+      --bad: #be3650;
+      font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 10%, rgba(255, 229, 138, 0.55), transparent 18rem),
+        radial-gradient(circle at 92% 8%, rgba(139, 211, 255, 0.45), transparent 16rem),
+        linear-gradient(135deg, #fff6fd 0%, #f7efff 52%, #fff4fb 100%);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .page {
+      position: relative;
+      width: min(1040px, calc(100% - 28px));
+      margin: 24px auto;
+      overflow: hidden;
+      background: var(--paper);
+      border: 2px solid rgba(168, 117, 255, 0.24);
+      border-radius: 18px;
+      box-shadow: 0 16px 38px rgba(96, 60, 126, 0.18);
+      padding: 34px 42px 46px;
+    }
+
+    .page::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 13px;
+      background: linear-gradient(90deg, #ff77b7, #ffdf6b, #8ee996, #72d8ff, #b58cff, #ff77b7);
+    }
+
+    .sparkles {
+      position: absolute;
+      top: 28px;
+      right: 24px;
+      display: grid;
+      grid-template-columns: 78px 116px;
+      gap: 6px;
+      align-items: end;
+      pointer-events: none;
+    }
+
+    .rainbow {
+      width: 112px;
+      height: 58px;
+      border-radius: 112px 112px 0 0;
+      background:
+        radial-gradient(circle at 50% 100%, var(--paper) 0 32px, transparent 33px),
+        conic-gradient(from 270deg at 50% 100%, #ff77b7 0 14%, #ffdf6b 14% 28%, #8ee996 28% 42%, #72d8ff 42% 56%, #b58cff 56% 70%, transparent 70%);
+    }
+
+    .unicorn {
+      width: 74px;
+      height: 66px;
+      position: relative;
+      transform: rotate(-4deg);
+    }
+
+    .unicorn .head {
+      position: absolute;
+      right: 6px;
+      bottom: 4px;
+      width: 52px;
+      height: 42px;
+      background: #fff;
+      border: 2px solid #d8c2ef;
+      border-radius: 50% 46% 48% 46%;
+    }
+
+    .unicorn .horn {
+      position: absolute;
+      right: 28px;
+      top: 0;
+      width: 0;
+      height: 0;
+      border-left: 9px solid transparent;
+      border-right: 9px solid transparent;
+      border-bottom: 30px solid #ffd85d;
+      transform: rotate(8deg);
+    }
+
+    .unicorn .mane {
+      position: absolute;
+      right: 45px;
+      bottom: 22px;
+      width: 20px;
+      height: 30px;
+      background: linear-gradient(#ff85c7, #a875ff, #72d8ff);
+      border-radius: 999px;
+    }
+
+    .unicorn .ear {
+      position: absolute;
+      right: 14px;
+      top: 22px;
+      width: 15px;
+      height: 20px;
+      background: #fff;
+      border: 2px solid #d8c2ef;
+      border-radius: 70% 70% 20% 20%;
+      transform: rotate(28deg);
+    }
+
+    .unicorn .eye {
+      position: absolute;
+      right: 20px;
+      bottom: 24px;
+      width: 7px;
+      height: 7px;
+      background: var(--ink);
+      border-radius: 50%;
+    }
+
+    .unicorn .cheek {
+      position: absolute;
+      right: 12px;
+      bottom: 15px;
+      width: 11px;
+      height: 7px;
+      background: #ffbadc;
+      border-radius: 999px;
+    }
+
+    header {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 168px;
+      gap: 22px;
+      align-items: start;
+      padding: 20px 170px 22px 0;
+      border-bottom: 2px dashed var(--line);
+      margin-bottom: 20px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      font-size: clamp(2.1rem, 4vw, 3rem);
+      line-height: 1;
+      letter-spacing: 0;
+      color: #7c3fc2;
+    }
+
+    .subtitle {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .score-card {
+      background: linear-gradient(180deg, #fff, #fff0fb);
+      border: 2px solid var(--line);
+      border-radius: 14px;
+      padding: 13px 14px;
+      text-align: center;
+    }
+
+    .score-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .score-card strong {
+      display: block;
+      margin-top: 4px;
+      color: #8a43c3;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .student {
+      display: grid;
+      grid-template-columns: 1fr 190px;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .student input {
+      width: 100%;
+      border: 0;
+      border-bottom: 2px solid var(--line);
+      background: transparent;
+      padding: 5px 2px;
+      outline: none;
+    }
+
+    section {
+      margin-top: 22px;
+      border: 1px solid rgba(223, 197, 238, 0.84);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.68);
+      padding: 16px;
+    }
+
+    .section-title {
+      display: inline-flex;
+      align-items: center;
+      min-height: 42px;
+      margin-bottom: 10px;
+      padding: 8px 13px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #ffd6ec, #eadcff);
+      color: #6b3297;
+      font-size: 1.18rem;
+      letter-spacing: 0;
+    }
+
+    .directions {
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.45;
+    }
+
+    .question-list {
+      margin: 0;
+      padding-left: 24px;
+    }
+
+    .question-list > li {
+      margin: 0 0 14px;
+      line-height: 1.45;
+    }
+
+    .drag-layout {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .drag-bank,
+    .drop-panel {
+      min-height: 120px;
+      border: 2px dashed #deb8ef;
+      border-radius: 14px;
+      background: #fff;
+      padding: 12px;
+    }
+
+    .drag-bank h3,
+    .drop-panel h3 {
+      margin-bottom: 10px;
+      color: #7c3fc2;
+      font-size: 1rem;
+    }
+
+    .card-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .drag-card {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      border: 1px solid #d9b8ee;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #fff, #fff5fc);
+      color: var(--ink);
+      padding: 8px 10px;
+      cursor: grab;
+      font-weight: 800;
+      line-height: 1.25;
+      box-shadow: 0 4px 10px rgba(136, 78, 172, 0.08);
+    }
+
+    .drag-card:active {
+      cursor: grabbing;
+    }
+
+    .drop-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(180px, 0.45fr);
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .drop-prompt {
+      line-height: 1.35;
+    }
+
+    .drop-target {
+      min-height: 43px;
+      border: 2px dashed #d9b8ee;
+      border-radius: 10px;
+      background: #fffafe;
+      padding: 5px;
+    }
+
+    .drop-target.over {
+      border-color: var(--pink);
+      background: #fff0fa;
+    }
+
+    .drop-target .drag-card {
+      width: 100%;
+      justify-content: center;
+      margin: 0;
+    }
+
+    .fill-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 190px;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 9px;
+    }
+
+    .fill-sentence {
+      min-width: 0;
+      white-space: nowrap;
+      overflow-x: auto;
+      line-height: 1.4;
+      padding-bottom: 3px;
+    }
+
+    .choice-list {
+      display: grid;
+      gap: 7px;
+      margin-top: 8px;
+      padding-left: 0;
+      list-style: none;
+      font-size: 0.96rem;
+    }
+
+    .choice-list label {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    textarea,
+    select,
+    input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--ink);
+      padding: 9px 10px;
+      outline: none;
+    }
+
+    textarea:focus,
+    select:focus,
+    input[type="text"]:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(168, 117, 255, 0.16);
+    }
+
+    textarea {
+      min-height: 78px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    .sequence-grid {
+      display: grid;
+      grid-template-columns: minmax(230px, 0.75fr) minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    .slot-row {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 9px;
+      margin-bottom: 9px;
+      align-items: stretch;
+    }
+
+    .slot-num {
+      display: grid;
+      place-items: center;
+      min-height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #ffe0f1, #eadcff);
+      color: #7c3fc2;
+      font-weight: 900;
+    }
+
+    .manual-score {
+      display: grid;
+      grid-template-columns: 1fr 98px;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .manual-score label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .feedback {
+      min-height: 24px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .actions {
+      position: sticky;
+      bottom: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      margin: 28px -42px -46px;
+      padding: 14px 42px;
+      border-top: 1px solid var(--line);
+      background: rgba(255, 250, 255, 0.92);
+      backdrop-filter: blur(8px);
+    }
+
+    button {
+      min-height: 41px;
+      border: 1px solid #a86df7;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #f48acb, #a875ff);
+      color: #fff;
+      padding: 9px 15px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #fff;
+      color: #7c3fc2;
+    }
+
+    .correct {
+      outline: 2px solid rgba(24, 133, 93, 0.42);
+    }
+
+    .incorrect {
+      outline: 2px solid rgba(190, 54, 80, 0.42);
+    }
+
+    @media (max-width: 820px) {
+      .page {
+        width: min(100% - 18px, 1040px);
+        padding: 28px 16px 34px;
+      }
+
+      header {
+        grid-template-columns: 1fr;
+        padding-right: 0;
+      }
+
+      .sparkles {
+        position: static;
+        margin-left: auto;
+      }
+
+      .student,
+      .drag-layout,
+      .sequence-grid,
+      .drop-row,
+      .fill-row,
+      .manual-score {
+        grid-template-columns: 1fr;
+      }
+
+      .fill-sentence {
+        white-space: normal;
+        overflow: visible;
+      }
+
+      .actions {
+        margin: 24px -16px -34px;
+        padding: 12px 16px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .page {
+        width: auto;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .actions {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="sparkles" aria-hidden="true">
+      <div class="unicorn">
+        <div class="horn"></div>
+        <div class="mane"></div>
+        <div class="ear"></div>
+        <div class="head"></div>
+        <div class="eye"></div>
+        <div class="cheek"></div>
+      </div>
+      <div class="rainbow"></div>
+    </div>
+
+    <header>
+      <div>
+        <h1>Esio Trot</h1>
+        <p class="subtitle">Rainbow Unicorn Interactive Questions</p>
+      </div>
+      <div class="score-card" aria-live="polite">
+        <span>Final Score</span>
+        <strong id="score">0 / 100</strong>
+      </div>
+    </header>
+
+    <div class="student">
+      <label>Name: <input type="text" aria-label="Student name"></label>
+      <label>Date: <input type="text" aria-label="Date"></label>
+    </div>
+
+    <section>
+      <h2 class="section-title">A. Vocabulary Match</h2>
+      <p class="directions">Drag each vocabulary word to the matching meaning. You can also click a word, then click a box.</p>
+      <div class="drag-layout">
+        <div class="drag-bank card-grid" id="vocabBank" data-group="vocab">
+          <h3 style="width: 100%">Words</h3>
+          <div class="drag-card" draggable="true" data-group="vocab" data-value="balcony">balcony</div>
+          <div class="drag-card" draggable="true" data-group="vocab" data-value="tortoise">tortoise</div>
+          <div class="drag-card" draggable="true" data-group="vocab" data-value="jealous">jealous</div>
+          <div class="drag-card" draggable="true" data-group="vocab" data-value="spell">spell</div>
+          <div class="drag-card" draggable="true" data-group="vocab" data-value="hibernated">hibernated</div>
+        </div>
+        <div class="drop-panel">
+          <h3>Meanings</h3>
+          <div class="drop-row"><div class="drop-prompt">a small outdoor platform on a building</div><div class="drop-target" data-group="vocab" data-answer="balcony" data-points="2"></div></div>
+          <div class="drop-row"><div class="drop-prompt">a slow-moving animal with a hard shell</div><div class="drop-target" data-group="vocab" data-answer="tortoise" data-points="2"></div></div>
+          <div class="drop-row"><div class="drop-prompt">unhappy because someone else has attention or love</div><div class="drop-target" data-group="vocab" data-answer="jealous" data-points="2"></div></div>
+          <div class="drop-row"><div class="drop-prompt">special words meant to make something happen</div><div class="drop-target" data-group="vocab" data-answer="spell" data-points="2"></div></div>
+          <div class="drop-row"><div class="drop-prompt">slept through the winter</div><div class="drop-target" data-group="vocab" data-answer="hibernated" data-points="2"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">B. Fill in the Blank</h2>
+      <p class="directions">Drag the best word into each blank. There are extra words to make it trickier.</p>
+      <div class="drag-bank card-grid" id="wordBank" data-group="blank">
+        <h3 style="width: 100%">Word Bank</h3>
+        <div class="drag-card" draggable="true" data-group="blank" data-value="mrs silver">Mrs Silver</div>
+        <div class="drag-card" draggable="true" data-group="blank" data-value="alfie">Alfie</div>
+        <div class="drag-card" draggable="true" data-group="blank" data-value="backwards">backwards</div>
+        <div class="drag-card" draggable="true" data-group="blank" data-value="tortoises">tortoises</div>
+        <div class="drag-card" draggable="true" data-group="blank" data-value="roberta">Roberta</div>
+        <div class="drag-card" draggable="true" data-group="blank" data-value="flowers">flowers</div>
+        <div class="drag-card" draggable="true" data-group="blank" data-value="balcony">balcony</div>
+        <div class="drag-card" draggable="true" data-group="blank" data-value="cabbage">cabbage</div>
+        <div class="drag-card" draggable="true" data-group="blank" data-value="pet shops">pet shops</div>
+        <div class="drag-card" draggable="true" data-group="blank" data-value="downstairs">downstairs</div>
+      </div>
+      <div style="margin-top: 14px">
+        <div class="fill-row"><div class="fill-sentence">1. Mr Hoppy is secretly in love with ______.</div><div class="drop-target" data-group="blank" data-answer="mrs silver" data-points="2"></div></div>
+        <div class="fill-row"><div class="fill-sentence">2. The pet tortoise's name is ______.</div><div class="drop-target" data-group="blank" data-answer="alfie" data-points="2"></div></div>
+        <div class="fill-row"><div class="fill-sentence">3. The words in the chant are written ______.</div><div class="drop-target" data-group="blank" data-answer="backwards" data-points="2"></div></div>
+        <div class="fill-row"><div class="fill-sentence">4. Mr Hoppy buys many different sized ______.</div><div class="drop-target" data-group="blank" data-answer="tortoises" data-points="2"></div></div>
+        <div class="fill-row"><div class="fill-sentence">5. At the end, the original Alfie lives with ______.</div><div class="drop-target" data-group="blank" data-answer="roberta" data-points="2"></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">C. True or False</h2>
+      <p class="directions">Choose True or False for each sentence.</p>
+      <ol class="question-list">
+        <li data-radio-group data-points="2" data-answer="true">Mr Hoppy lives above Mrs Silver.
+          <ul class="choice-list"><li><label><input type="radio" name="tf1" value="true"> True</label></li><li><label><input type="radio" name="tf1" value="false"> False</label></li></ul>
+        </li>
+        <li data-radio-group data-points="2" data-answer="false">Mrs Silver wants Alfie to become smaller.
+          <ul class="choice-list"><li><label><input type="radio" name="tf2" value="true"> True</label></li><li><label><input type="radio" name="tf2" value="false"> False</label></li></ul>
+        </li>
+        <li data-radio-group data-points="2" data-answer="true">Mr Hoppy uses many tortoises to make his plan work.
+          <ul class="choice-list"><li><label><input type="radio" name="tf3" value="true"> True</label></li><li><label><input type="radio" name="tf3" value="false"> False</label></li></ul>
+        </li>
+        <li data-radio-group data-points="2" data-answer="false">Mrs Silver knows from the start that Mr Hoppy is switching tortoises.
+          <ul class="choice-list"><li><label><input type="radio" name="tf4" value="true"> True</label></li><li><label><input type="radio" name="tf4" value="false"> False</label></li></ul>
+        </li>
+        <li data-radio-group data-points="2" data-answer="true">Alfie later lives with a girl named Roberta.
+          <ul class="choice-list"><li><label><input type="radio" name="tf5" value="true"> True</label></li><li><label><input type="radio" name="tf5" value="false"> False</label></li></ul>
+        </li>
+      </ol>
+    </section>
+
+    <section>
+      <h2 class="section-title">D. Put the Events in Order</h2>
+      <p class="directions">Drag each event into the correct order. You can also click an event, then click a numbered box.</p>
+      <div class="sequence-grid">
+        <div class="drag-bank card-grid" id="eventBank" data-group="event">
+          <h3 style="width: 100%">Events</h3>
+          <div class="drag-card" draggable="true" data-group="event" data-value="2">Mrs Silver worries that Alfie is not growing.</div>
+          <div class="drag-card" draggable="true" data-group="event" data-value="4">Mr Hoppy swaps Alfie with larger tortoises.</div>
+          <div class="drag-card" draggable="true" data-group="event" data-value="1">Mr Hoppy admires Mrs Silver from his balcony.</div>
+          <div class="drag-card" draggable="true" data-group="event" data-value="5">Mr Hoppy asks Mrs Silver to marry him.</div>
+          <div class="drag-card" draggable="true" data-group="event" data-value="3">Mr Hoppy tells Mrs Silver to say backwards words.</div>
+        </div>
+        <div class="drop-panel">
+          <h3>Correct Order</h3>
+          <div class="slot-row"><div class="slot-num">1</div><div class="drop-target" data-group="event" data-answer="1" data-points="2"></div></div>
+          <div class="slot-row"><div class="slot-num">2</div><div class="drop-target" data-group="event" data-answer="2" data-points="2"></div></div>
+          <div class="slot-row"><div class="slot-num">3</div><div class="drop-target" data-group="event" data-answer="3" data-points="2"></div></div>
+          <div class="slot-row"><div class="slot-num">4</div><div class="drop-target" data-group="event" data-answer="4" data-points="2"></div></div>
+          <div class="slot-row"><div class="slot-num">5</div><div class="drop-target" data-group="event" data-answer="5" data-points="2"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">E. Retell in 4-5 Sentences</h2>
+      <p class="directions">Write 4-5 sentences to retell the story. A teacher or parent can choose 0-4 points for each part.</p>
+      <ol class="question-list">
+        <li class="manual-score"><div><strong>Beginning:</strong> Who are the main characters and where do they live?<textarea aria-label="retell beginning"></textarea></div><div><label>Points</label><select data-manual-points><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div></li>
+        <li class="manual-score"><div><strong>Problem:</strong> What does Mrs Silver want for Alfie?<textarea aria-label="retell problem"></textarea></div><div><label>Points</label><select data-manual-points><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div></li>
+        <li class="manual-score"><div><strong>Plan:</strong> What idea does Mr Hoppy create?<textarea aria-label="retell plan"></textarea></div><div><label>Points</label><select data-manual-points><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div></li>
+        <li class="manual-score"><div><strong>Result:</strong> What happens after the plan works?<textarea aria-label="retell result"></textarea></div><div><label>Points</label><select data-manual-points><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div></li>
+        <li class="manual-score"><div><strong>Ending:</strong> What happens to Alfie later?<textarea aria-label="retell ending"></textarea></div><div><label>Points</label><select data-manual-points><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2 class="section-title">F. Comprehension Questions</h2>
+      <p class="directions">Choose one answer for each question. Questions 1-5 are basic. Questions 6-10 are a little more difficult.</p>
+      <h3>Basic Version</h3>
+      <ol class="question-list">
+        <li data-radio-group data-points="4" data-answer="b">Who does Mr Hoppy love?
+          <ul class="choice-list"><li><label><input type="radio" name="f1" value="a"> Roberta</label></li><li><label><input type="radio" name="f1" value="b"> Mrs Silver</label></li><li><label><input type="radio" name="f1" value="c"> a pet shop owner</label></li><li><label><input type="radio" name="f1" value="d"> his neighbor upstairs</label></li></ul>
+        </li>
+        <li data-radio-group data-points="4" data-answer="c">What kind of animal is Alfie?
+          <ul class="choice-list"><li><label><input type="radio" name="f2" value="a"> a dog</label></li><li><label><input type="radio" name="f2" value="b"> a cat</label></li><li><label><input type="radio" name="f2" value="c"> a tortoise</label></li><li><label><input type="radio" name="f2" value="d"> a bird</label></li></ul>
+        </li>
+        <li data-radio-group data-points="4" data-answer="a">What does "Esio Trot" mean when read the other way?
+          <ul class="choice-list"><li><label><input type="radio" name="f3" value="a"> tortoise</label></li><li><label><input type="radio" name="f3" value="b"> balcony</label></li><li><label><input type="radio" name="f3" value="c"> flower</label></li><li><label><input type="radio" name="f3" value="d"> magic</label></li></ul>
+        </li>
+        <li data-radio-group data-points="4" data-answer="d">Where does Mr Hoppy get many tortoises?
+          <ul class="choice-list"><li><label><input type="radio" name="f4" value="a"> from Mrs Silver</label></li><li><label><input type="radio" name="f4" value="b"> from a school</label></li><li><label><input type="radio" name="f4" value="c"> from his garden</label></li><li><label><input type="radio" name="f4" value="d"> from pet shops</label></li></ul>
+        </li>
+        <li data-radio-group data-points="4" data-answer="b">What does Mrs Silver say when Mr Hoppy asks her to marry him?
+          <ul class="choice-list"><li><label><input type="radio" name="f5" value="a"> She says no.</label></li><li><label><input type="radio" name="f5" value="b"> She says yes.</label></li><li><label><input type="radio" name="f5" value="c"> She asks Alfie first.</label></li><li><label><input type="radio" name="f5" value="d"> She moves away.</label></li></ul>
+        </li>
+      </ol>
+      <h3>Advanced Version</h3>
+      <ol class="question-list" start="6">
+        <li data-radio-group data-points="4" data-answer="c">Why is Mr Hoppy jealous of Alfie?
+          <ul class="choice-list"><li><label><input type="radio" name="f6" value="a"> Alfie has more money.</label></li><li><label><input type="radio" name="f6" value="b"> Alfie lives above him.</label></li><li><label><input type="radio" name="f6" value="c"> Mrs Silver gives Alfie most of her attention.</label></li><li><label><input type="radio" name="f6" value="d"> Alfie can talk to Mrs Silver.</label></li></ul>
+        </li>
+        <li data-radio-group data-points="4" data-answer="a">Why does Mr Hoppy use tortoises of many different sizes?
+          <ul class="choice-list"><li><label><input type="radio" name="f7" value="a"> He needs Alfie to seem as if he is growing slowly.</label></li><li><label><input type="radio" name="f7" value="b"> He wants to open a pet shop.</label></li><li><label><input type="radio" name="f7" value="c"> He wants Mrs Silver to sell them.</label></li><li><label><input type="radio" name="f7" value="d"> He is collecting animals for winter.</label></li></ul>
+        </li>
+        <li data-radio-group data-points="4" data-answer="d">Which word best describes Mr Hoppy's plan?
+          <ul class="choice-list"><li><label><input type="radio" name="f8" value="a"> simple but useless</label></li><li><label><input type="radio" name="f8" value="b"> honest and direct</label></li><li><label><input type="radio" name="f8" value="c"> careless and accidental</label></li><li><label><input type="radio" name="f8" value="d"> clever but dishonest</label></li></ul>
+        </li>
+        <li data-radio-group data-points="4" data-answer="b">What helps Mr Hoppy finally ask Mrs Silver to marry him?
+          <ul class="choice-list"><li><label><input type="radio" name="f9" value="a"> Alfie runs away.</label></li><li><label><input type="radio" name="f9" value="b"> Mrs Silver is happy and friendly toward him.</label></li><li><label><input type="radio" name="f9" value="c"> The pet shop owner tells him to ask.</label></li><li><label><input type="radio" name="f9" value="d"> Roberta writes him a letter.</label></li></ul>
+        </li>
+        <li data-radio-group data-points="4" data-answer="c">What is one important question a reader might ask about the ending?
+          <ul class="choice-list"><li><label><input type="radio" name="f10" value="a"> Why did the building have balconies?</label></li><li><label><input type="radio" name="f10" value="b"> Why did Alfie like vegetables?</label></li><li><label><input type="radio" name="f10" value="c"> Was it right for Mr Hoppy to trick Mrs Silver?</label></li><li><label><input type="radio" name="f10" value="d"> Why were there pet shops in the city?</label></li></ul>
+        </li>
+      </ol>
+    </section>
+
+    <div class="feedback" id="feedback" aria-live="polite"></div>
+    <div class="actions">
+      <button type="button" class="secondary" id="resetBtn">Reset</button>
+      <button type="button" class="secondary" onclick="window.print()">Print</button>
+      <button type="button" id="scoreBtn">Calculate Score</button>
+    </div>
+  </main>
+
+  <script>
+    let selectedCard = null;
+
+    function selectedRadioValue(group) {
+      const checked = group.querySelector("input[type='radio']:checked");
+      return checked ? checked.value : "";
+    }
+
+    function scorePage() {
+      let total = 0;
+
+      document.querySelectorAll("[data-radio-group]").forEach(group => {
+        const value = selectedRadioValue(group);
+        const correct = value === group.dataset.answer;
+        group.classList.toggle("correct", correct);
+        group.classList.toggle("incorrect", Boolean(value) && !correct);
+        if (correct) {
+          total += Number(group.dataset.points);
+        }
+      });
+
+      document.querySelectorAll(".drop-target[data-answer]").forEach(target => {
+        const card = target.querySelector(".drag-card");
+        const correct = card && card.dataset.value === target.dataset.answer;
+        target.classList.toggle("correct", correct);
+        target.classList.toggle("incorrect", Boolean(card) && !correct);
+        if (correct) {
+          total += Number(target.dataset.points);
+        }
+      });
+
+      document.querySelectorAll("[data-manual-points]").forEach(select => {
+        total += Number(select.value);
+      });
+
+      document.querySelector("#score").textContent = `${total} / 100`;
+      document.querySelector("#feedback").textContent = "Score calculated. Section E uses the manual point dropdowns.";
+    }
+
+    function clearSelection() {
+      if (selectedCard) {
+        selectedCard.style.outline = "";
+      }
+      selectedCard = null;
+    }
+
+    function homeBankFor(card) {
+      return document.querySelector(`#${card.dataset.group === "vocab" ? "vocabBank" : card.dataset.group === "blank" ? "wordBank" : "eventBank"}`);
+    }
+
+    function moveCard(card, target) {
+      if (!card || !target) {
+        return;
+      }
+      if (target.dataset.group && target.dataset.group !== card.dataset.group) {
+        return;
+      }
+      const existing = target.classList.contains("drop-target") ? target.querySelector(".drag-card") : null;
+      if (existing) {
+        homeBankFor(existing).appendChild(existing);
+      }
+      target.appendChild(card);
+      clearSelection();
+    }
+
+    document.querySelectorAll(".drag-card").forEach(card => {
+      card.addEventListener("dragstart", event => {
+        event.dataTransfer.setData("text/plain", `${card.dataset.group}:${card.dataset.value}`);
+      });
+      card.addEventListener("click", () => {
+        clearSelection();
+        selectedCard = card;
+        card.style.outline = "3px solid rgba(244, 138, 203, 0.55)";
+      });
+    });
+
+    document.querySelectorAll(".drop-target, .drag-bank").forEach(target => {
+      target.addEventListener("dragover", event => {
+        event.preventDefault();
+        target.classList.add("over");
+      });
+      target.addEventListener("dragleave", () => target.classList.remove("over"));
+      target.addEventListener("drop", event => {
+        event.preventDefault();
+        target.classList.remove("over");
+        const [group, value] = event.dataTransfer.getData("text/plain").split(":");
+        const card = [...document.querySelectorAll(".drag-card")]
+          .find(item => item.dataset.group === group && item.dataset.value === value);
+        moveCard(card, target);
+      });
+      target.addEventListener("click", () => {
+        if (selectedCard) {
+          moveCard(selectedCard, target);
+        }
+      });
+    });
+
+    document.querySelector("#scoreBtn").addEventListener("click", scorePage);
+
+    document.querySelector("#resetBtn").addEventListener("click", () => {
+      document.querySelectorAll("input[type='text'], textarea").forEach(input => input.value = "");
+      document.querySelectorAll("input[type='radio']").forEach(input => input.checked = false);
+      document.querySelectorAll("[data-manual-points]").forEach(select => select.value = "0");
+      document.querySelectorAll(".drag-card").forEach(card => homeBankFor(card).appendChild(card));
+      document.querySelectorAll(".correct, .incorrect").forEach(item => item.classList.remove("correct", "incorrect"));
+      clearSelection();
+      document.querySelector("#score").textContent = "0 / 100";
+      document.querySelector("#feedback").textContent = "";
+    });
+  </script>
+</body>
+</html>
